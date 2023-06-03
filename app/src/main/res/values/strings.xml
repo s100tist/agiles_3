@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">agiles_3</string>
+    <string name="add_ingrediente">Agregar un nuevo ingrediente</string>
 </resources>

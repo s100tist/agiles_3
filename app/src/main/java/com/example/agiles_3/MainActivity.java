@@ -1,5 +1,6 @@
 package com.example.agiles_3;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -158,6 +159,14 @@ public class MainActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+
+
+    public void crearReceta(View view) {
+
+        Intent intent = new Intent(this, Receta.class);
+        startActivity(intent);
     }
 }
 
