@@ -69,6 +69,21 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        // JSON de la receta con toda la información
+        String jsonString = getIntent().getStringExtra("jsonObject");
+        if (jsonString != null) {
+            try {
+                //jsonObject es el JSON con la información de los ingredientes
+                JSONObject jsonObject = new JSONObject(jsonString);
+                // Resto del código para trabajar con el objeto JSON
+                Log.d("JSON recibido", String.valueOf(jsonObject));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.d("JSON", "JSON nulo");
+        }
     }
 
     private void searchRecipes(String query) {
@@ -164,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void crearReceta(View view) {
-
+// Se manda a la pantalla para agregar ingredientes
         Intent intent = new Intent(this, Receta.class);
         startActivity(intent);
     }

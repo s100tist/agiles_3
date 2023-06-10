@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,24 +36,24 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class Receta extends AppCompatActivity {
+    String apiUrl = "https://api.edamam.com/api/nutrition-details?app_id=5d40c77a&app_key=b083f3c286a2f50bc8ea7808c6c676e5";
 
-    private static final String API_URL = "https://test-es.edamam.com/api/nutrition-data?app_id=8af55b45&app_key=130850566c8c9ac00a4c406797e0378a";
-    private static final String API_APP_ID = "8af55b45";
-    private static final String API_APP_KEY = "130850566c8c9ac00a4c406797e0378a";
     private static final String LOG_TAG =
             MainActivity.class.getSimpleName();
     private RecyclerView recyclerView;
     private MyAdapter adapter;
     private Button btnAgregar, btnEliminar;
     private List<String> editTextDataList;
+    private JSONArray listaIngredientes;
+    JSONObject jsonResponse;
 
-    private List<String> getAllEditTextValues() {
-        List<String> values = new ArrayList<>();
+    private JSONArray getAllEditTextValues() {
+        JSONArray values = new JSONArray();
         for (int i = 0; i < adapter.getItemCount(); i++) {
             MyAdapter.ViewHolder viewHolder = (MyAdapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
             if (viewHolder != null) {
                 String editTextData = viewHolder.editText.getText().toString();
-                values.add(editTextData);
+                values.put(editTextData);
             }
         }
         return values;
@@ -109,7 +110,6 @@ public class Receta extends AppCompatActivity {
                 notifyItemRemoved(position);
                 notifyItemRangeChanged(position, editTextDataList.size());
             }
-            Log.d(LOG_TAG, "Eliminado: " + editTextDataList);
         }
 
         @NonNull
@@ -163,24 +163,21 @@ public class Receta extends AppCompatActivity {
         myAlertBuilder.setPositiveButton("SI", new
                 DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // User clicked the OK button.
-                        Toast.makeText(getApplicationContext(), "Receta guardada correctamente.",
-                                Toast.LENGTH_SHORT).show();
 
-                        editTextDataList = getAllEditTextValues();
+
+                        listaIngredientes = getAllEditTextValues();
                         String textoTitulo = titulo.getText().toString();
                         String textoDescripcion = descripcion.getText().toString();
 
                         JSONObject jsonObject = new JSONObject();
                         try {
-                            jsonObject.put("title", textoTitulo);
-                            jsonObject.put("summary", textoDescripcion);
-                            jsonObject.put("ingr", editTextDataList);
+//                            jsonObject.put("title", textoTitulo);
+//                            jsonObject.put("summary", textoDescripcion);
+                            jsonObject.put("ingr", listaIngredientes);
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        // Imprimir el JSON
-                        Log.d("JSON", jsonObject.toString());
 
                         // Enviar la solicitud HTTP para agregar la receta a la API de Edamam
                         try {
@@ -189,7 +186,7 @@ public class Receta extends AppCompatActivity {
                             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonObject.toString());
 
                             Request request = new Request.Builder()
-                                    .url(API_URL)
+                                    .url(apiUrl)
                                     .addHeader("Content-Type", "application/json")
                                     .post(requestBody)
                                     .build();
@@ -198,16 +195,26 @@ public class Receta extends AppCompatActivity {
                                 @Override
                                 public void onFailure(Call call, IOException e) {
                                     e.printStackTrace();
-                                    // Manejar la falla de la solicitud
                                 }
 
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
+
                                     if (response.isSuccessful()) {
                                         // La solicitud fue exitosa, puedes procesar la respuesta aquí
                                         String responseBody = response.body().string();
+                                        try {
+                                            jsonResponse = new JSONObject(responseBody);
+                                        } catch (JSONException e) {
+                                            throw new RuntimeException(e);
+                                        }
                                         Log.d("API Response", responseBody);
-                                        // Procesa la respuesta según sea necesario
+
+                                        // Crear un intent para pasar a la siguiente actividad
+                                        Intent intent = new Intent(Receta.this, MainActivity.class);
+                                        intent.putExtra("jsonObject", jsonResponse.toString());
+                                        startActivity(intent);
+
                                     } else {
                                         // La solicitud no fue exitosa, maneja el error aquí
                                         Log.d("API Error", "Código de error: " + response.code() + ", Mensaje: " + response.message());
@@ -220,8 +227,9 @@ public class Receta extends AppCompatActivity {
                             // Manejar cualquier excepción que pueda ocurrir durante la solicitud HTTP
                         }
 
-                        Intent intent = new Intent(Receta.this, MainActivity.class);
-                        startActivity(intent);
+                        // User clicked the OK button
+                        Toast.makeText(getApplicationContext(), "Receta guardada correctamente.",
+                                Toast.LENGTH_SHORT).show();
 
                     }
                 });
