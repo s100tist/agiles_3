@@ -3,6 +3,7 @@ package com.example.agiles_3;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -64,6 +65,12 @@ public class Receta extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ReceipeViewModel mReceipeViewModel;
+        mReceipeViewModel = new ViewModelProvider(this).get(ReceipeViewModel.class);
+        mReceipeViewModel.getAllReceipes().observe(this, receipes -> {
+            Log.d("ajiji",receipes.toString());
+        });
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receta);
 
