@@ -1,15 +1,20 @@
 package com.example.agiles_3;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -18,6 +23,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONArray;
@@ -27,6 +33,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -54,6 +61,25 @@ public class MainActivity extends AppCompatActivity {
         recipes = new ArrayList<>();
         adapter = new RecipeAdapter(this, recipes);
         listView.setAdapter(adapter);
+
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Obtén el dato seleccionado
+                Recipe selectedData = (Recipe) parent.getItemAtPosition(position);
+                //Log.d(TAG, String.valueOf(selectedData.getName()));
+
+                // Muestra la información del dato seleccionado en una nueva actividad o en un diálogo, como desees
+                Context context = view.getContext();
+                Intent intent = new Intent(context, guardarReceta.class);
+                intent.putExtra("recipe", selectedData);
+                startActivity(intent);
+            }
+        });
+        
+        
+        
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -160,13 +186,15 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject recipeObject = hitObject.getJSONObject("recipe");
                 String recipeName = recipeObject.getString("label");
                 String recipeImage = recipeObject.getString("image");
+                String recipesCalories = recipeObject.getString("calories");
                 JSONArray ingredientLinesArray = recipeObject.getJSONArray("ingredientLines");
                 List<String> ingredientLines = new ArrayList<>();
                 for (int j = 0; j < ingredientLinesArray.length(); j++) {
                     ingredientLines.add(ingredientLinesArray.getString(j));
                 }
 
-                Recipe recipe = new Recipe(recipeName, recipeImage, ingredientLines);
+
+                Recipe recipe = new Recipe(recipeName, recipeImage, ingredientLines, recipesCalories);
                 recipes.add(recipe);
             }
 
@@ -183,17 +211,23 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, Receta.class);
         startActivity(intent);
     }
+
+
 }
 
-class Recipe {
+class Recipe implements Serializable{
     private String name;
     private String imageUrl;
     private List<String> ingredientLines;
+    private String calories;
 
-    Recipe(String name, String imageUrl, List<String> ingredientLines) {
+    private String carbs;
+
+    Recipe(String name, String imageUrl, List<String> ingredientLines, String calories) {
         this.name = name;
         this.imageUrl = imageUrl;
         this.ingredientLines = ingredientLines;
+        this.calories = calories;
     }
 
     String getName() {
@@ -207,6 +241,8 @@ class Recipe {
     List<String> getIngredientLines() {
         return ingredientLines;
     }
+
+    String getCalories(){return  calories;}
 }
 
 class RecipeAdapter extends ArrayAdapter<Recipe> {
@@ -229,10 +265,12 @@ class RecipeAdapter extends ArrayAdapter<Recipe> {
         if (recipe != null) {
             TextView nameTextView = itemView.findViewById(R.id.nameTextView);
             ImageView imageView = itemView.findViewById(R.id.imageView);
-            TextView ingredientsTextView = itemView.findViewById(R.id.ingredientsTextView);
-
+            TextView caloriesTextView = itemView.findViewById(R.id.caloriesTextView);
+           // TextView ingredientsTextView = itemView.findViewById(R.id.ingredientsTextView);
+            //aki van las kalorias
             nameTextView.setText(recipe.getName());
-            ingredientsTextView.setText(TextUtils.join("\n", recipe.getIngredientLines()));
+            caloriesTextView.setText("Calorías: " + recipe.getCalories());
+            //ingredientsTextView.setText(TextUtils.join("\n", recipe.getIngredientLines()));
 
             if (!TextUtils.isEmpty(recipe.getImageUrl())) {
                 new DownloadImageTask(imageView).execute(recipe.getImageUrl());
@@ -242,7 +280,10 @@ class RecipeAdapter extends ArrayAdapter<Recipe> {
         return itemView;
     }
 
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+
+
+
+    public static class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         private ImageView imageView;
 
         DownloadImageTask(ImageView imageView) {
