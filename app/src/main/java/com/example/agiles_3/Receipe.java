@@ -7,6 +7,71 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "recetas_tabla")
 public class Receipe {
+    @NonNull
+    public String getUrl() {
+        return url;
+    }
+
+    @NonNull
+    public Double getYield() {
+        return yield;
+    }
+
+    @NonNull
+    public Integer getCalories() {
+        return calories;
+    }
+
+    @NonNull
+    public Double getEnergy() {
+        return energy;
+    }
+
+    @NonNull
+    public Double getFat() {
+        return fat;
+    }
+
+    @NonNull
+    public Double getSaturated() {
+        return saturated;
+    }
+
+    @NonNull
+    public Double getTrans() {
+        return trans;
+    }
+
+    @NonNull
+    public Double getCarbos() {
+        return carbos;
+    }
+
+    @NonNull
+    public Double getFiber() {
+        return fiber;
+    }
+
+    @NonNull
+    public Double getSugar() {
+        return sugar;
+    }
+
+    @NonNull
+    public Double getProtein() {
+        return protein;
+    }
+
+    @NonNull
+    public Double getCholesterol() {
+        return cholesterol;
+    }
+
+    @NonNull
+    public Double getSodium() {
+        return sodium;
+    }
+
     @PrimaryKey
     @NonNull
     @ColumnInfo(name="url")
@@ -41,7 +106,7 @@ public class Receipe {
     private Double carbos;
 
     @NonNull
-    @ColumnInfo(name="yield")
+    @ColumnInfo(name="fiber")
     private Double fiber;
 
     @NonNull
